@@ -3,6 +3,7 @@ import numpy as np
 import csv
 import matplotlib.pyplot as plt
 from collections import OrderedDict
+import argparse
 
 from queue_benchmark import QueueBenchmark
 from thread_benchmark import ThreadBenchmark
@@ -116,9 +117,14 @@ def write_results_to_plots(benchmark_results):
 
             plt.savefig('%d_%d.png' % (type, query_number))
 
+parser = argparse.ArgumentParser(description='Benchmark Python mutlitprocessing capabilities.')
+parser.add_argument('query_file')
+
+args = parser.parse_args()
+
 
 # get the queries
-query_filename = 'sample_queries.csv'
+query_filename = args.query_file
 
 benchmark_results = {}
 
