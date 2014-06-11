@@ -4,6 +4,7 @@ import csv
 import matplotlib.pyplot as plt
 from collections import OrderedDict
 import argparse
+import os
 
 from queue_benchmark import QueueBenchmark
 from thread_benchmark import ThreadBenchmark
@@ -17,8 +18,8 @@ TYPE_COMMUNICATION = 1
 
 slave_numbers = [2, 5, 10, 25, 50, 100]
 #slave_numbers = [2, 50, 100]
-#query_numbers = [10, 100, 10000, 100000, 1000000, 10000000]
-query_numbers = [10, 100, 1000, 10000]
+query_numbers = [10000, 100000, 1000000, 10000000, 25000000, 50000000]
+# query_numbers = [10, 100, 1000, 10000]
 
 def run_benchmark(Benchmark, context, type):
     benchmark_key = str(Benchmark).split(".")[1]
@@ -91,6 +92,10 @@ def write_results_to_plots(benchmark_results):
 
     # print data
 
+    # check if the export dir exists, if not, create
+    if not os.path.exists('plots'):
+        os.makedirs('plots')
+
     # actually plot the data
     for type, query_data in data.items():
 
@@ -115,7 +120,7 @@ def write_results_to_plots(benchmark_results):
 
             plt.title("%d Queries" % query_number)
 
-            plt.savefig('%d_%d.png' % (type, query_number))
+            plt.savefig('plots/%d_%d.png' % (type, query_number))
 
 parser = argparse.ArgumentParser(description='Benchmark Python mutlitprocessing capabilities.')
 parser.add_argument('query_file')
