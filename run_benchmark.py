@@ -16,9 +16,11 @@ from pipe_benchmark import MultiPipeBenchmark
 TYPE_PROCESS = 0
 TYPE_COMMUNICATION = 1
 
-slave_numbers = [2, 5, 10, 25, 50, 100]
-#slave_numbers = [2, 50, 100]
-query_numbers = [10000, 100000, 1000000, 10000000, 25000000, 50000000]
+# slave_numbers = [2, 5, 10, 25, 50, 100]
+slave_numbers = [10, 50, 100]
+query_numbers = [1000000, 10000000, 25000000]
+# slave_numbers = [2, 50, 100]
+# query_numbers = [10000, 100000, 1000000, 10000000, 25000000, 50000000]
 # query_numbers = [10, 100, 1000, 10000]
 
 def run_benchmark(Benchmark, context, type):
@@ -39,7 +41,7 @@ def run_benchmark(Benchmark, context, type):
             mean_execution_time = np.mean(timer.repeat(repeat=3, number=1))
 
             # print "%d slaves took avg. %f s" % (i, mean_execution_time)
-            result[benchmark_key].append({'type': type, 'execution_time': float(mean_execution_time)/j, 'slaves': i, 'queries': j})
+            result[benchmark_key].append({'type': type, 'execution_time': float(j)/float(mean_execution_time), 'slaves': i, 'queries': j})
 
     return result
 
@@ -109,7 +111,7 @@ def write_results_to_plots(benchmark_results):
                 ax.plot(slave_numbers, benchmark_data, label="%s" % benchmark)
             
             ax.set_xlabel("Number of slaves")
-            ax.set_ylabel("s/Query")
+            ax.set_ylabel("Queries/s")
             box = ax.get_position()
             ax.set_position([box.x0, box.y0 + box.height * 0.1,
                              box.width, box.height * 0.9])
