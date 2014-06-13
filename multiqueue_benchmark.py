@@ -5,13 +5,13 @@ from Queue import Empty, Full
 from threading import Thread
 
 from benchmark import Benchmark
-from utilities import put_into_queue_until_done, get_next_object_and_iterator, random_query
+from utilities import put_into_queue_until_done, get_next_object_and_iterator, random_query, Counter
 
-def process(input_queue, output_queue, should_terminate_event, processing_finished_event):
+def process(input_queue, output_queue, should_terminate_event, counter):
 	while True:
 		try:
 			# get the query
-			query = input_queue.get(False)
+			query = input_queue.get(True, 0.1)
 
 			# do some dummy calculation
 			result = hashlib.md5(query).hexdigest()
@@ -20,8 +20,8 @@ def process(input_queue, output_queue, should_terminate_event, processing_finish
 			put_into_queue_until_done(output_queue, result)
 		except Empty, e:
 			if should_terminate_event.is_set():
-				processing_finished_event.set()
 				break
+	counter.increment()
 
 def fill_queue(queues, should_terminate_event, context):
 	iterator = None
@@ -44,53 +44,49 @@ class MultiQueueBenchmark(Benchmark):
 
 		# create the should terminate event
 		event = Event()
-		event2 = Event()
+
+		finished_slaves_counter = Counter()
 
 		# spawn the processes
 		for i in range(self.context['number']):
-			p = Process(target=process, args=[input_queues[i], output_queues[i], event, event2])
-			p.name = "Slave %d" % i
+			p = Process(target=process, args=[input_queues[i], output_queues[i], event, finished_slaves_counter])
 			p.start()
 			processes.append(p)
 
 		# get the queries and push them into the queue
 		queue_thread = Process(target=fill_queue, args=[input_queues, event, self.context])
-		queue_thread.name = "Queue process"
 		queue_thread.start()
 
 		# empty the output_queue
-		exc_count = 0
 		result_count = 0
 
 		iterator = None
 		while True:
 			try:
 				queue, iterator = get_next_object_and_iterator(output_queues, iterator)
-				result = queue.get_nowait()
+				result = queue.get(False)
 				
 				# do some dummy calculation
 				hashlib.md5(result).hexdigest()
 
 				result_count += 1
-				exc_count = 0
 			except Empty, e:
-				exc_count += 1
-
-				# ugly fix, don't know why this occurs
-				if exc_count > 50000:
+				if finished_slaves_counter.value() == self.context['number']:
 					break
 
-				if len(active_children()) == 0:
-					break
-		# close the output_queue
-		for queue in output_queues:
-			queue.close()
+				time.sleep(0.05)
 
-		event.wait()
 		queue_thread.join()
 
 		print "Processed %d results" % result_count
 
 		# join the processes
 		for p in processes:
-			p.terminate()
+			p.join()
+
+		# close some stuff
+		for queue in output_queues:
+			queue.close()
+
+		for queue in input_queues:
+			queue.close()

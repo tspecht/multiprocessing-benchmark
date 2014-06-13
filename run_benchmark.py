@@ -18,10 +18,10 @@ TYPE_COMMUNICATION = 1
 
 # slave_numbers = [2, 5, 10, 25, 50, 100]
 slave_numbers = [10, 50, 100]
-query_numbers = [1000, 100000, 1000000, 10000000]
+# query_numbers = [1000, 100000, 1000000, 10000000]
 # slave_numbers = [2, 50, 100]
 # query_numbers = [10000, 100000, 1000000, 10000000, 25000000, 50000000]
-#query_numbers = [10, 100, 1000, 10000]
+query_numbers = [10, 100, 1000, 10000]
 
 def run_benchmark(Benchmark, context={}, type=TYPE_PROCESS):
     benchmark_key = str(Benchmark).split(".")[1]
@@ -143,7 +143,7 @@ benchmark_results.update(run_benchmark(QueueBenchmark, type=TYPE_COMMUNICATION))
 # multiqueue benchmarks
 benchmark_results.update(run_benchmark(MultiQueueBenchmark, type=TYPE_COMMUNICATION))
 
-# multipipe benchmarks
+# # multipipe benchmarks
 benchmark_results.update(run_benchmark(MultiPipeBenchmark, type=TYPE_COMMUNICATION))
 
 print "Generating output ..."

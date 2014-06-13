@@ -1,4 +1,18 @@
 from Queue import Empty, Full
+from multiprocessing import Value, Lock
+
+class Counter(object):
+    def __init__(self, initval=0):
+        self.val = Value('i', initval)
+        self.lock = Lock()
+
+    def increment(self):
+        with self.lock:
+            self.val.value += 1
+
+    def value(self):
+        with self.lock:
+            return self.val.value
 
 def put_into_queue_until_done(queue, data):
 	has_sent = False
@@ -12,11 +26,15 @@ def put_into_queue_until_done(queue, data):
 def get_next_object_and_iterator(objects, iterator=None):
 	object = None
 	object_iterator = iterator if iterator is not None else iter(objects)
-	try:
-		object = object_iterator.next()
-	except Exception, e:
-		object_iterator = iter(objects)
-		object = object_iterator.next()
+
+	if iterator is None:
+		object = objects[0]
+	else:
+		try:
+			object = object_iterator.next()
+		except Exception, e:
+			object_iterator = iter(objects)
+			object = objects[0]
 
 	return object, object_iterator
 
