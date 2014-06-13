@@ -2,6 +2,7 @@ import hashlib
 from multiprocessing import Process
 
 from benchmark import Benchmark
+from utilities import random_query
 
 def process(queries):
 	for query in queries:
@@ -13,10 +14,8 @@ class ProcessBenchmark(Benchmark):
 		processes = []
 		queries = []
 
-		for line in open(self.context['filename'], 'r'):
-			if len(queries) >= self.context['query_number']:
-				break
-			queries.append(line)
+		for i in range(self.context['query_number']):
+			queries.append(random_query())
 
 		queries_per_process = len(queries)/self.context['number']
 		for i in range(self.context['number']):

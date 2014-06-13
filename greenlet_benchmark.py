@@ -3,6 +3,7 @@ import gevent
 from gevent.pool import Pool
 
 from benchmark import Benchmark
+from utilities import random_query
 
 def work(queries):
 	for query in queries:
@@ -13,10 +14,8 @@ class GreenletBenchmark(Benchmark):
 	def run(self):
 		queries = []
 
-		for line in open(self.context['filename'], 'r'):
-			if len(queries) >= self.context['query_number']:
-				break
-			queries.append(line)
+		for i in range(self.context['query_number']):
+			queries.append(random_query())
 		queries_per_thread = len(queries)/self.context['number']
 
 		pool = Pool(size=self.context['number'])

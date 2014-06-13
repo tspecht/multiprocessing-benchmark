@@ -5,7 +5,7 @@ from Queue import Empty, Full
 from threading import Thread
 
 from benchmark import Benchmark
-from utilities import put_into_queue_until_done
+from utilities import put_into_queue_until_done, random_query
 
 def process(input_queue, output_queue, should_terminate_event, processing_finished_event):
 	while True:
@@ -23,13 +23,9 @@ def process(input_queue, output_queue, should_terminate_event, processing_finish
 				processing_finished_event.set()
 				break
 
-def fill_queue(filename, queue, should_terminate_event, context):
-	line_count = 0
-	for line in open(filename, 'r'):
-		if line_count >= context['query_number']:
-			break
-		put_into_queue_until_done(queue, line)
-		line_count += 1
+def fill_queue(queue, should_terminate_event, context):
+	for i in range(context['query_number']):
+		put_into_queue_until_done(queue, random_query())
 
 	# signal that workers should terminate
 	should_terminate_event.set()
@@ -55,7 +51,7 @@ class QueueBenchmark(Benchmark):
 			processes.append(p)
 
 		# get the queries and push them into the queue
-		queue_thread = Process(target=fill_queue, args=[self.context['filename'], input_queue, event, self.context])
+		queue_thread = Process(target=fill_queue, args=[input_queue, event, self.context])
 		queue_thread.name = "Queue process"
 		queue_thread.start()
 

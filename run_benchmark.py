@@ -21,9 +21,9 @@ slave_numbers = [10, 50, 100]
 query_numbers = [1000, 10000, 1000000, 10000000]
 # slave_numbers = [2, 50, 100]
 # query_numbers = [10000, 100000, 1000000, 10000000, 25000000, 50000000]
-# query_numbers = [10, 100, 1000, 10000]
+#query_numbers = [10, 100, 1000, 10000]
 
-def run_benchmark(Benchmark, context, type):
+def run_benchmark(Benchmark, context={}, type=TYPE_PROCESS):
     benchmark_key = str(Benchmark).split(".")[1]
 
     result = {benchmark_key: []}
@@ -124,36 +124,27 @@ def write_results_to_plots(benchmark_results):
 
             plt.savefig('plots/%d_%d.png' % (type, query_number))
 
-parser = argparse.ArgumentParser(description='Benchmark Python mutlitprocessing capabilities.')
-parser.add_argument('query_file')
-
-args = parser.parse_args()
-
-
-# get the queries
-query_filename = args.query_file
-
 benchmark_results = {}
 
 print "Starting Benchmark ..."
 
 # thread benchmarks
-benchmark_results.update(run_benchmark(ThreadBenchmark, context={'filename': query_filename}, type=TYPE_PROCESS))
+benchmark_results.update(run_benchmark(ThreadBenchmark, type=TYPE_PROCESS))
 
 # process benchmarks
-benchmark_results.update(run_benchmark(ProcessBenchmark, context={'filename': query_filename}, type=TYPE_PROCESS))
+benchmark_results.update(run_benchmark(ProcessBenchmark, type=TYPE_PROCESS))
 
 # greenlet benchmarks
-benchmark_results.update(run_benchmark(GreenletBenchmark, context={'filename': query_filename}, type=TYPE_PROCESS))
+benchmark_results.update(run_benchmark(GreenletBenchmark, type=TYPE_PROCESS))
 
 # queue benchmarks
-benchmark_results.update(run_benchmark(QueueBenchmark, context={'filename': query_filename}, type=TYPE_COMMUNICATION))
+benchmark_results.update(run_benchmark(QueueBenchmark, type=TYPE_COMMUNICATION))
 
 # multiqueue benchmarks
-benchmark_results.update(run_benchmark(MultiQueueBenchmark, context={'filename': query_filename}, type=TYPE_COMMUNICATION))
+benchmark_results.update(run_benchmark(MultiQueueBenchmark, type=TYPE_COMMUNICATION))
 
 # multipipe benchmarks
-benchmark_results.update(run_benchmark(MultiPipeBenchmark, context={'filename': query_filename}, type=TYPE_COMMUNICATION))
+benchmark_results.update(run_benchmark(MultiPipeBenchmark, type=TYPE_COMMUNICATION))
 
 print "Generating output ..."
 

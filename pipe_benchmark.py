@@ -4,15 +4,16 @@ from multiprocessing import Process, Pipe, Event, active_children
 from threading import Thread
 
 from benchmark import Benchmark
-from utilities import get_next_object_and_iterator
+from utilities import get_next_object_and_iterator, random_query
 
 def process(input_pipe, output_pipe, should_terminate_event):
 	input_receiver, input_sender = input_pipe
 	output_receiver, output_sender = output_pipe
+
 	while True:
 		try:
 			# get the query
-			if input_receiver.poll(1):
+			if input_receiver.poll(0.5):
 				query = input_receiver.recv()
 			else:
 				break
@@ -27,19 +28,14 @@ def process(input_pipe, output_pipe, should_terminate_event):
 			if should_terminate_event.is_set():
 				break
 
-def fill_pipe(filename, pipes, should_terminate_event, context):
+def fill_pipe(pipes, should_terminate_event, context):
 	iterator = None
 
-	counter = 0
-	for line in open(filename, 'r'):
-		if counter >= context['query_number']:
-				break
+	for i in range(context['query_number']):
 		pipe, iterator = get_next_object_and_iterator(pipes, iterator)
 
 		pipe_receiver, pipe_sender = pipe
-		pipe_sender.send(line)
-
-		counter += 1
+		pipe_sender.send(random_query())
 
 	for pipe_receiver, pipe_sender in pipes:
 		pipe_receiver.close()
@@ -67,22 +63,29 @@ class MultiPipeBenchmark(Benchmark):
 			processes.append(p)
 
 		# get the queries and push them into the queue
-		queue_thread = Process(target=fill_pipe, args=[self.context['filename'], input_connections, event, self.context])
+		queue_thread = Process(target=fill_pipe, args=[input_connections, event, self.context])
 		queue_thread.start()
 
 		# empty the output_queue
 		result_count = 0
 		iterator = None
+
+		exc_count = 0
 		while True:
 			try:
 				pipe, iterator = get_next_object_and_iterator(output_connections, iterator)
 
 				pipe_receiver, pipe_sender = pipe
 
-				if pipe_receiver.poll(1):
+				if pipe_receiver.poll():
 					result = pipe_receiver.recv()
+					exc_count = 0
 				else:
-					break
+					exc_count += 1
+					if exc_count >= 10000:
+						break
+					else:
+						continue
 				
 				# do some dummy calculation
 				hashlib.md5(result).hexdigest()
