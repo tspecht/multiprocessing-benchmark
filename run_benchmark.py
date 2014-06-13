@@ -41,7 +41,7 @@ def run_benchmark(Benchmark, context, type):
             mean_execution_time = np.mean(timer.repeat(repeat=3, number=1))
 
             # print "%d slaves took avg. %f s" % (i, mean_execution_time)
-            result[benchmark_key].append({'type': type, 'execution_time': float(j)/float(mean_execution_time), 'slaves': i, 'queries': j})
+            result[benchmark_key].append({'type': type, 'execution_time': mean_execution_time, 'slaves': i, 'queries': j})
 
     return result
 
@@ -111,7 +111,7 @@ def write_results_to_plots(benchmark_results):
                 ax.plot(slave_numbers, benchmark_data, label="%s" % benchmark)
             
             ax.set_xlabel("Number of slaves")
-            ax.set_ylabel("Queries/s")
+            ax.set_ylabel("Execution time (s)")
             box = ax.get_position()
             ax.set_position([box.x0, box.y0 + box.height * 0.1,
                              box.width, box.height * 0.9])
