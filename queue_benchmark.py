@@ -79,6 +79,8 @@ class QueueBenchmark(Benchmark):
 		# close the output_queue
 		output_queue.close()
 
+		event.wait()
+		event2.wait()
 		queue_thread.terminate()
 
 		print "Processed %d results" % result_count

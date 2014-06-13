@@ -86,7 +86,8 @@ class MultiQueueBenchmark(Benchmark):
 		for queue in output_queues:
 			queue.close()
 
-		queue_thread.terminate()
+		event.wait()
+		queue_thread.join()
 
 		print "Processed %d results" % result_count
 
