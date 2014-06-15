@@ -77,15 +77,16 @@ class MultiPipeBenchmark(Benchmark):
 
 				pipe_receiver, pipe_sender = pipe
 
-				if pipe_receiver.poll():
+				if pipe_receiver.poll(0.5):
 					result = pipe_receiver.recv()
 					exc_count = 0
 				else:
-					exc_count += 1
-					if exc_count >= 10000:
-						break
-					else:
-						continue
+					break
+					# exc_count += 1
+					# if exc_count >= 1:
+					# 	break
+					# else:
+					# 	continue
 				
 				# do some dummy calculation
 				hashlib.md5(result).hexdigest()
@@ -93,6 +94,7 @@ class MultiPipeBenchmark(Benchmark):
 				result_count += 1
 			except EOFError, e:
 				break
+
 		# close the output_queue
 		for receiver, sender in output_connections:
 			receiver.close()
