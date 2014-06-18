@@ -100,7 +100,7 @@ class MultiPipeBenchmark(Benchmark):
 			receiver.close()
 			sender.close()
 
-		queue_thread.join()
+		queue_thread.terminate()
 		event.wait()
 
 		print "Processed %d results" % result_count

@@ -11,7 +11,7 @@ def process(input_queue, output_queue, should_terminate_event, counter):
 	while True:
 		try:
 			# get the query
-			query = input_queue.get(True, 0.1)
+			query = input_queue.get(True, 0.01)
 
 			# do some dummy calculation
 			result = hashlib.md5(query).hexdigest()
