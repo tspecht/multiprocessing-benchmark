@@ -76,17 +76,10 @@ class MultiQueueBenchmark(Benchmark):
 
 				time.sleep(0.05)
 
-		queue_thread.join()
+		queue_thread.terminate()
 
 		print "Processed %d results" % result_count
 
 		# join the processes
 		for p in processes:
-			p.join()
-
-		# close some stuff
-		for queue in output_queues:
-			queue.close()
-
-		for queue in input_queues:
-			queue.close()
+			p.terminate()
