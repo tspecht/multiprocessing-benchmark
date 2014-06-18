@@ -18,10 +18,10 @@ TYPE_COMMUNICATION = 1
 
 # slave_numbers = [2, 5, 10, 25, 50, 100]
 slave_numbers = [10, 50, 100]
-query_numbers = [10000, 100000, 1000000, 10000000]
+query_numbers = [100000, 1000000, 2000000]
 # slave_numbers = [2, 50, 100]
 # query_numbers = [10000, 100000, 1000000, 10000000, 25000000, 50000000]
-# query_numbers = [10, 100, 1000, 10000]
+# query_numbers = [1000, 10000, 100000]
 
 def run_benchmark(Benchmark, context={}, type=TYPE_PROCESS):
     benchmark_key = str(Benchmark).split(".")[1]
@@ -46,25 +46,20 @@ def run_benchmark(Benchmark, context={}, type=TYPE_PROCESS):
     return result
 
 
-# def write_results_to_csv(benchmark_results):
-#     with open('results.csv', 'w') as csvfile:
-#         writer = csv.writer(csvfile)
+def write_results_to_csv(benchmark_results):
+
+    with open('results.csv', 'w') as csvfile:
+        writer = csv.writer(csvfile)
         
-#         # write the headers
-#         headers = ['Benchmark']
+        # write the headers
+        headers = ['Benchmark', 'Execution time', 'Type', 'Slaves', 'Queries']
+        writer.writerow(headers)
 
-#         for number in slave_numbers:
-#             headers.append(str(number))
-
-#         writer.writerow(headers)
-
-#         # write the results
-#         for benchmark, results in benchmark_results.items():
-#             row = [benchmark]
-#             for value in results:
-#                 row.append(value)
-#             writer.writerow(row)
-#         csvfile.close()
+        # write the results
+        for benchmark, results in benchmark_results.items():
+            for execution_result in results:
+                writer.writerow([benchmark, execution_result['execution_time'], execution_result['type'], execution_result['slaves'], execution_result['queries']])
+        csvfile.close()
 
 def write_results_to_stdout(benchmark_results):
     for benchmark, results in benchmark_results.items():
@@ -148,6 +143,6 @@ benchmark_results.update(run_benchmark(MultiPipeBenchmark, type=TYPE_COMMUNICATI
 
 print "Generating output ..."
 
-# write_results_to_csv(benchmark_results)
+write_results_to_csv(benchmark_results)
 # write_results_to_stdout(benchmark_results)
 write_results_to_plots(benchmark_results)
