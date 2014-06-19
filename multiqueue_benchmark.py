@@ -61,9 +61,9 @@ class MultiQueueBenchmark(Benchmark):
 		result_count = 0
 
 		iterator = None
+		queue, iterator = get_next_object_and_iterator(output_queues, iterator)
 		while True:
 			try:
-				queue, iterator = get_next_object_and_iterator(output_queues, iterator)
 				result = queue.get(False)
 				
 				# do some dummy calculation
@@ -71,6 +71,8 @@ class MultiQueueBenchmark(Benchmark):
 
 				result_count += 1
 			except Empty, e:
+				queue, iterator = get_next_object_and_iterator(output_queues, iterator)
+
 				if finished_slaves_counter.value() == self.context['number']:
 					break
 
