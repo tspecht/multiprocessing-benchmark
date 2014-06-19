@@ -16,6 +16,13 @@ from pipe_benchmark import MultiPipeBenchmark
 TYPE_PROCESS = 0
 TYPE_COMMUNICATION = 1
 
+BENCHMARK_TYPES = { 'QueueBenchmark': 1,
+                    'ThreadBenchmark': 0,
+                    'ProcessBenchmark': 0,
+                    'GreenletBenchmark': 0,
+                    'MultiQueueBenchmark': 1,
+                    'MultiPipeBenchmark': 1 }
+
 # slave_numbers = [2, 5, 10, 25, 50, 100]
 slave_numbers = [10, 50, 100]
 query_numbers = [100000, 1000000, 2000000]
@@ -24,7 +31,10 @@ query_numbers = [100000, 1000000, 2000000]
 # query_numbers = [1000, 10000, 100000]
 
 def run_benchmark(Benchmark, context={}, type=TYPE_PROCESS):
-    benchmark_key = str(Benchmark).split(".")[1]
+    if len(str(Benchmark).split(".")) > 1:
+        benchmark_key = str(Benchmark).split(".")[1]
+    else:
+        benchmark_key = str(Benchmark)
 
     result = {benchmark_key: []}
     for i in slave_numbers:
@@ -38,7 +48,7 @@ def run_benchmark(Benchmark, context={}, type=TYPE_PROCESS):
 
             print "Executing Benchmark %s (%d slaves, %d queries) ..." % (benchmark_key, i, j)
             
-            mean_execution_time = np.mean(timer.repeat(repeat=3, number=1))
+            mean_execution_time = np.mean(timer.repeat(repeat=6, number=1))
 
             # print "%d slaves took avg. %f s" % (i, mean_execution_time)
             result[benchmark_key].append({'type': type, 'execution_time': mean_execution_time, 'slaves': i, 'queries': j})
@@ -46,9 +56,13 @@ def run_benchmark(Benchmark, context={}, type=TYPE_PROCESS):
     return result
 
 
-def write_results_to_csv(benchmark_results):
+def write_results_to_csv(benchmark_results, benchmark_name):
 
-    with open('results.csv', 'w') as csvfile:
+    # check if the export dir exists, if not, create
+    if not os.path.exists('results'):
+        os.makedirs('results')
+
+    with open('results/%s.csv' % benchmark_name, 'w') as csvfile:
         writer = csv.writer(csvfile)
         
         # write the headers
@@ -87,8 +101,6 @@ def write_results_to_plots(benchmark_results):
 
             data[type][queries][benchmark].append(result['execution_time'])
 
-    # print data
-
     # check if the export dir exists, if not, create
     if not os.path.exists('plots'):
         os.makedirs('plots')
@@ -119,30 +131,24 @@ def write_results_to_plots(benchmark_results):
 
             plt.savefig('plots/%d_%d.png' % (type, query_number))
 
+parser = argparse.ArgumentParser(description='Benchmark Python multiprocessing.')
+parser.add_argument('benchmark', help='Class name of the benchmark to be executed')
+
+args = parser.parse_args()
+
+# validate the benchmark type
+if args.benchmark not in BENCHMARK_TYPES.keys():
+    raise Exception("Please specify a valid benchmark type!")
+
 benchmark_results = {}
 
 print "Starting Benchmark ..."
 
-# thread benchmarks
-benchmark_results.update(run_benchmark(ThreadBenchmark, type=TYPE_PROCESS))
-
-# process benchmarks
-benchmark_results.update(run_benchmark(ProcessBenchmark, type=TYPE_PROCESS))
-
-# greenlet benchmarks
-benchmark_results.update(run_benchmark(GreenletBenchmark, type=TYPE_PROCESS))
-
-# queue benchmarks
-benchmark_results.update(run_benchmark(QueueBenchmark, type=TYPE_COMMUNICATION))
-
-# multiqueue benchmarks
-benchmark_results.update(run_benchmark(MultiQueueBenchmark, type=TYPE_COMMUNICATION))
-
-# # multipipe benchmarks
-benchmark_results.update(run_benchmark(MultiPipeBenchmark, type=TYPE_COMMUNICATION))
+# run the benchmark
+benchmark_results.update(run_benchmark(globals()[args.benchmark], type=BENCHMARK_TYPES[args.benchmark]))
 
 print "Generating output ..."
 
-write_results_to_csv(benchmark_results)
+write_results_to_csv(benchmark_results, args.benchmark)
 # write_results_to_stdout(benchmark_results)
-write_results_to_plots(benchmark_results)
+#write_results_to_plots(benchmark_results)
