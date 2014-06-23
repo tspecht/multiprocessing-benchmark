@@ -72,6 +72,7 @@ class MultiPipeBenchmark(Benchmark):
 		iterator = None
 
 		exc_count = 0
+		num_result_count_unchanged = 0
 		while True:
 			try:
 				pipe, iterator = get_next_object_and_iterator(output_connections, iterator)
@@ -81,9 +82,10 @@ class MultiPipeBenchmark(Benchmark):
 				if pipe_receiver.poll():
 					result = pipe_receiver.recv()
 				else:
-					if event.is_set() and result_count == self.context['query_number']:
+					if event.is_set() and (result_count == self.context['query_number'] or num_result_count_unchanged >= 100):
 						break
 					else:
+						num_result_count_unchanged += 1
 						continue
 					# exc_count += 1
 					# if exc_count >= 1:
@@ -95,6 +97,7 @@ class MultiPipeBenchmark(Benchmark):
 				hashlib.md5(result).hexdigest()
 
 				result_count += 1
+				num_result_count_unchanged = 0
 			except EOFError, e:
 				break
 
