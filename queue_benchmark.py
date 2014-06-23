@@ -1,5 +1,4 @@
 import hashlib
-import time
 from multiprocessing import Process, Queue, Event, active_children
 from Queue import Empty, Full
 from threading import Thread
@@ -17,7 +16,7 @@ def process(input_queue, output_queue, should_terminate_event, counter):
 			result = hashlib.md5(query).hexdigest()
 
 			# write it back to the output queue
-			put_into_queue_until_done(output_queue, result)
+			output_queue.put(result)
 		except Empty, e:
 			if should_terminate_event.is_set():
 				break
@@ -26,11 +25,10 @@ def process(input_queue, output_queue, should_terminate_event, counter):
 
 def fill_queue(queue, should_terminate_event, context):
 	for i in range(context['query_number']):
-		put_into_queue_until_done(queue, random_query())
+		queue.put(random_query())
 
 	# signal that workers should terminate
 	should_terminate_event.set()
-
 
 class QueueBenchmark(Benchmark):
 
@@ -53,24 +51,29 @@ class QueueBenchmark(Benchmark):
 
 		# get the queries and push them into the queue
 		queue_thread = Process(target=fill_queue, args=[input_queue, event, self.context])
+		queue_thread.daemon = True
 		queue_thread.start()
 
 		# empty the output_queue
 		result_count = 0
+		num_result_count_unchanged = 0
 		while True:
 			try:
-				result = output_queue.get(False)
+				result = output_queue.get_nowait()
 				
 				# do some dummy calculation
 				hashlib.md5(result).hexdigest()
 
 				result_count += 1
+				num_result_count_unchanged = 0
 			except Empty, e:
 
-				if finished_slaves_counter.value() == self.context['number']:
+				num_result_count_unchanged += 1
+				if finished_slaves_counter.value() == self.context['number'] and (result_count == self.context['query_number'] or num_result_count_unchanged >= 1000) and event.is_set():
 					break
 
-				time.sleep(0.05)
+		input_queue.close()
+		output_queue.close()
 
 		# close the output_queue
 		queue_thread.terminate()
@@ -79,4 +82,4 @@ class QueueBenchmark(Benchmark):
 
 		# join the processes
 		for p in processes:
-			p.terminate()
+			p.join()

@@ -13,10 +13,12 @@ def process(input_pipe, output_pipe, should_terminate_event):
 	while True:
 		try:
 			# get the query
-			if input_receiver.poll(0.5):
+			if input_receiver.poll():
 				query = input_receiver.recv()
-			else:
+			elif should_terminate_event.is_set():
 				break
+			else:
+				continue
 
 			# do some dummy calculation
 			result = hashlib.md5(query).hexdigest()
@@ -24,7 +26,6 @@ def process(input_pipe, output_pipe, should_terminate_event):
 			# write it back to the output queue
 			output_sender.send(result)
 		except EOFError, e:
-			print e.__dict__
 			if should_terminate_event.is_set():
 				break
 
@@ -77,11 +78,13 @@ class MultiPipeBenchmark(Benchmark):
 
 				pipe_receiver, pipe_sender = pipe
 
-				if pipe_receiver.poll(0.5):
+				if pipe_receiver.poll():
 					result = pipe_receiver.recv()
-					exc_count = 0
 				else:
-					break
+					if event.is_set() and result_count == self.context['query_number']:
+						break
+					else:
+						continue
 					# exc_count += 1
 					# if exc_count >= 1:
 					# 	break
@@ -100,11 +103,10 @@ class MultiPipeBenchmark(Benchmark):
 			receiver.close()
 			sender.close()
 
-		queue_thread.terminate()
-		event.wait()
+		queue_thread.join()
 
 		print "Processed %d results" % result_count
 
 		# join the processes
 		for p in processes:
-			p.terminate()
+			p.join()

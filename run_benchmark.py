@@ -25,7 +25,7 @@ BENCHMARK_TYPES = { 'QueueBenchmark': 1,
 
 # slave_numbers = [2, 5, 10, 25, 50, 100]
 slave_numbers = [10, 50, 100]
-query_numbers = [100000, 1000000, 2000000]
+query_numbers = [10000, 100000, 1000000]
 # slave_numbers = [2, 50, 100]
 # query_numbers = [10000, 100000, 1000000, 10000000, 25000000, 50000000]
 # query_numbers = [1000, 10000, 100000]
