@@ -1,4 +1,5 @@
 import pickle
+import time
 import hashlib
 from threading import Thread
 
@@ -8,6 +9,7 @@ from utilities import random_query
 def thread(queries):
 	for query in queries:
 		hashlib.md5(query).hexdigest()
+		time.sleep(0.005)
 
 class ThreadBenchmark(Benchmark):
 

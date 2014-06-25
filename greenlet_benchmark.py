@@ -1,4 +1,5 @@
 import hashlib
+import time
 import gevent
 from gevent.pool import Pool
 
@@ -8,6 +9,7 @@ from utilities import random_query
 def work(queries):
 	for query in queries:
 		hashlib.md5(query).hexdigest()
+		time.sleep(0.005)
 
 class GreenletBenchmark(Benchmark):
 

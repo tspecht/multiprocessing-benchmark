@@ -1,4 +1,5 @@
 import hashlib
+import time
 from multiprocessing import Process
 
 from benchmark import Benchmark
@@ -7,6 +8,7 @@ from utilities import random_query
 def process(queries):
 	for query in queries:
 		hashlib.md5(query).hexdigest()
+		time.sleep(0.005)
 
 class ProcessBenchmark(Benchmark):
 
