@@ -1,4 +1,5 @@
 import hashlib
+import time
 from multiprocessing import Process, Queue, Event, active_children
 from Queue import Empty, Full
 from threading import Thread
@@ -7,6 +8,7 @@ from benchmark import Benchmark
 from utilities import put_into_queue_until_done, get_next_object_and_iterator, random_query, Counter
 
 def process(input_queue, output_queue, should_terminate_event, counter):
+	count = 0
 	while True:
 		try:
 			# get the query
@@ -17,6 +19,11 @@ def process(input_queue, output_queue, should_terminate_event, counter):
 
 			# write it back to the output queue
 			output_queue.put(result)
+
+			if count%2000 == 0:
+				time.sleep(0.8)
+
+			count += 1
 		except Empty, e:
 			if should_terminate_event.is_set():
 				break

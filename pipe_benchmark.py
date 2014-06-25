@@ -10,6 +10,7 @@ def process(input_pipe, output_pipe, should_terminate_event):
 	input_receiver, input_sender = input_pipe
 	output_receiver, output_sender = output_pipe
 
+	count = 0
 	while True:
 		try:
 			# get the query
@@ -25,6 +26,11 @@ def process(input_pipe, output_pipe, should_terminate_event):
 
 			# write it back to the output queue
 			output_sender.send(result)
+
+			if count%2000 == 0:
+				time.sleep(0.8)
+			
+			count += 1
 		except EOFError, e:
 			if should_terminate_event.is_set():
 				break
