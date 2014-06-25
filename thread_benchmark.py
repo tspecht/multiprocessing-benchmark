@@ -7,9 +7,10 @@ from benchmark import Benchmark
 from utilities import random_query
 
 def thread(queries):
-	for query in queries:
-		hashlib.md5(query).hexdigest()
-		time.sleep(0.005)
+	for i in range(len(queries)):
+		hashlib.md5(queries[i]).hexdigest()
+		if i%2000 == 0:
+			time.sleep(0.8)
 
 class ThreadBenchmark(Benchmark):
 
