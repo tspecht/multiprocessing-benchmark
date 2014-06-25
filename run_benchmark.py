@@ -24,7 +24,7 @@ BENCHMARK_TYPES = { 'QueueBenchmark': 1,
                     'MultiPipeBenchmark': 1 }
 
 # slave_numbers = [2, 5, 10, 25, 50, 100]
-slave_numbers = [10, 50, 100]
+slave_numbers = [2, 16, 64]
 query_numbers = [10000, 100000, 1000000]
 # slave_numbers = [2, 50, 100]
 # query_numbers = [10000, 100000, 1000000, 10000000, 25000000, 50000000]
@@ -48,7 +48,7 @@ def run_benchmark(Benchmark, context={}, type=TYPE_PROCESS):
 
             print "Executing Benchmark %s (%d slaves, %d queries) ..." % (benchmark_key, i, j)
             
-            mean_execution_time = np.mean(timer.repeat(repeat=6, number=1))
+            mean_execution_time = np.mean(timer.repeat(repeat=2, number=1))
 
             # print "%d slaves took avg. %f s" % (i, mean_execution_time)
             result[benchmark_key].append({'type': type, 'execution_time': mean_execution_time, 'slaves': i, 'queries': j})
